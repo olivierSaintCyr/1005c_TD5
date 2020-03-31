@@ -160,16 +160,3 @@ int main()
 
 // vi: syn=cpp : ts=4 : wrap : lbr : bri : brishift=4 : tagmarker=//TODO,m3
 
-
-
-
-
-
-
-
-
-
-test2 test2 test2
-
-//IOJASASUIHJASIUSHDUIAHSSDDUIHASIUSDH
-
