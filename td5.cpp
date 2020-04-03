@@ -143,7 +143,7 @@ bool chargerImage(Image& image, const string& nomImage)
 		
 		//TODO: Allouer le tableau pour les intensités des pixels de la ligne.
 		image.lignes[i].intensites = new uint8_t[image.largeur];
-		for (int j : range(entete.largeur - 1, -1, -1)) {
+		for (int j : range(0, image.largeur)) {
 			//image.lignes[i].intensites[j] = *new uint8_t;
 			//TODO: Lire les intensités pour une ligne, à partir du fichier, vers le tableau alloué ci-dessus.
 			fichier.read((char*)&image.lignes[i].intensites[j], sizeof(uint8_t));
@@ -161,6 +161,9 @@ void decouperVide(Image& image)
 	bool existeNonZero = false, trouverDebut = false, trouverFin = false;
 	int debutLigne = -1, finLigne = -1;
 	for (int i : range(0,image.hauteur)) {
+		debutLigne = -1;
+		finLigne = -1;
+		existeNonZero = false, trouverDebut = false, trouverFin = false;
 		if (image.lignes[i].intensites != nullptr) {
 			for (int j : range(0, image.largeur)) {
 				if (image.lignes[i].intensites[j] != 0 && !trouverDebut) {
@@ -182,7 +185,8 @@ void decouperVide(Image& image)
 			image.lignes[i].intensites = nullptr;
 		}
 		else if (image.lignes[i].debut != debutLigne && image.lignes[i].longueur != finLigne - debutLigne) {
-			uint8_t* nouvelleIntensites = new uint8_t; //Copier ligne
+			unsigned longueur = finLigne - debutLigne;
+			uint8_t* nouvelleIntensites = new uint8_t[longueur]; //Copier ligne
 			for (int j : range(0, finLigne - debutLigne)) {
 				nouvelleIntensites[j] = image.lignes[i].intensites[debutLigne+j];
 			}
@@ -212,7 +216,7 @@ void afficherImage(Image& image) {
 		if (image.lignes[i].intensites != nullptr) {
 			unsigned indexPixelVivant = 0;
 			for (int j : range(0, image.largeur)) {
-				if (j >= image.lignes[i].debut && j <= image.lignes[i].debut + image.lignes[i].longueur) {
+				if (j >= image.lignes[i].debut && j < image.lignes[i].debut + image.lignes[i].longueur) {
 					afficherGris(image.lignes[i].intensites[indexPixelVivant]);
 					indexPixelVivant++;
 				}
@@ -235,16 +239,18 @@ int main()
 
 	Image image = {};
 	//TODO: Charger une image.
-	string nomFichier = "exemple4x4.tga";
+	string nomFichier = "rond.tga";
 	chargerImage(image, nomFichier);
 	//TODO: Afficher la taille de l'image en nombre d'octets conservés au total dans les lignes.
+	cout << "L'image " << tailleImage(image) << " octets" << endl;
 	//TODO: Découper le vide de l'image.
 	decouperVide(image);
 	//TODO: Afficher nouvelle taille de l'image en nombre d'octets conservés au total dans les lignes.
+	wcout << "L'image " << tailleImage(image) << L" octets après découpage" << endl;
 	//TODO: Afficher l'image en texte.
 	afficherImage(image);
 	//TODO: Désallouer l'image.
-	
+	desallouerImage(image);
 	if (image.lignes != nullptr)
 		cout << "Le pointeur de lignes devrait etre nul rendu a la fin du programme." << endl;
 }
