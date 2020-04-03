@@ -185,13 +185,13 @@ void decouperVide(Image& image)
 			image.lignes[i].intensites = nullptr;
 		}
 		else if (image.lignes[i].debut != debutLigne && image.lignes[i].longueur != finLigne - debutLigne) {
-			unsigned longueur = finLigne - debutLigne;
+			int longueur = finLigne - debutLigne + 1;//<------------
 			uint8_t* nouvelleIntensites = new uint8_t[longueur]; //Copier ligne
-			for (int j : range(0, finLigne - debutLigne)) {
+			for (int j : range(0, longueur)) {//<------------
 				nouvelleIntensites[j] = image.lignes[i].intensites[debutLigne+j];
 			}
 			image.lignes[i].debut = debutLigne;
-			image.lignes[i].longueur = finLigne - debutLigne;
+			image.lignes[i].longueur = longueur;
 			delete image.lignes[i].intensites;
 			image.lignes[i].intensites = nouvelleIntensites;
 		}
@@ -239,7 +239,7 @@ int main()
 
 	Image image = {};
 	//TODO: Charger une image.
-	string nomFichier = "turing.tga";
+	string nomFichier = "rond.tga";
 	chargerImage(image, nomFichier);
 	//TODO: Afficher la taille de l'image en nombre d'octets conservés au total dans les lignes.
 	cout << "L'image " << tailleImage(image) << " octets" << endl;
