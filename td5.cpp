@@ -194,3 +194,4 @@ int main()
 //TODO: S'assurer que l'exécution avec débogage n'indique pas de fuite de mémoire dans le fenêtre "Sortie" de Visual Studio. \file
 
 // vi: syn=cpp : ts=4 : wrap : lbr : bri : brishift=4 : tagmarker=//TODO,m3
+
