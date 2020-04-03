@@ -239,14 +239,14 @@ int main()
 
 	Image image = {};
 	//TODO: Charger une image.
-	string nomFichier = "rond.tga";
+	string nomFichier = "turing.tga";
 	chargerImage(image, nomFichier);
 	//TODO: Afficher la taille de l'image en nombre d'octets conservés au total dans les lignes.
 	cout << "L'image " << tailleImage(image) << " octets" << endl;
 	//TODO: Découper le vide de l'image.
 	decouperVide(image);
 	//TODO: Afficher nouvelle taille de l'image en nombre d'octets conservés au total dans les lignes.
-	wcout << "L'image " << tailleImage(image) << L" octets après découpage" << endl;
+	wcout << L"L'image " << tailleImage(image) << L" octets après découpage" << endl;
 	//TODO: Afficher l'image en texte.
 	afficherImage(image);
 	//TODO: Désallouer l'image.
