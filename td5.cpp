@@ -134,18 +134,18 @@ bool chargerImage(Image& image, const string& nomImage)
 	image.hauteur = entete.hauteur;
 	
 	//TODO: Allouer le tableau pour les lignes.
-	image.lignes = new LigneImage;
+	image.lignes = new LigneImage[image.hauteur];
+	
 	for (int i : range(entete.hauteur - 1, -1, -1)) {
 		//TODO: Mettre le début de ligne à 0 et sa longueur à entete.largeur .
 		image.lignes[i].debut = 0;
 		image.lignes[i].longueur = entete.largeur;
 		
 		//TODO: Allouer le tableau pour les intensités des pixels de la ligne.
-		image.lignes[i].intensites = new uint8_t;
+		image.lignes[i].intensites = new uint8_t[image.largeur];
 		for (int j : range(entete.largeur - 1, -1, -1)) {
 			//image.lignes[i].intensites[j] = *new uint8_t;
 			//TODO: Lire les intensités pour une ligne, à partir du fichier, vers le tableau alloué ci-dessus.
-			uint8_t pixel;
 			fichier.read((char*)&image.lignes[i].intensites[j], sizeof(uint8_t));
 		}
 		
