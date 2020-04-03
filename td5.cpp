@@ -67,7 +67,7 @@ struct Image {
 *  Affiche un caractère gris d'une certaine intensité à la console.
 *  Version très simple avec peu de niveaux de gris vraiment différents.
 *  \param  intensite  L'intensité, entre 0 et 255.
-*/
+*/ 
 void afficherGris(int intensite)
 {
 	static const int nNiveauxEntree = 256;
@@ -113,8 +113,10 @@ bool chargerImage(Image& image, const string& nomImage)
 {
 	EnteteTGA entete;
 	//TODO: Ouvrir le fichier et charger le début dans la structure 'entete'.  Si le fichier ne s'ouvre pas ou la lecture échoue, retourner faux.
-	fstream fichier(nomImage, ios::binary);
-	fichier.read((char*)& entete, sizeof(entete));
+	ifstream fichier(nomImage, ios::binary);
+	
+	fichier.read((char*)&entete, sizeof(entete));
+	
 	// On vérifie que le fichier correspond au format simple qu'on supporte.
 	if (entete.tailleId != 0
 		|| entete.typePalette != 0
@@ -127,19 +129,23 @@ bool chargerImage(Image& image, const string& nomImage)
 	}
 	// On désalloue avant de charger une image, s'il y en avait déjà une avant.
 	desallouerImage(image);
+	
 	image.largeur = entete.largeur;
 	image.hauteur = entete.hauteur;
-
+	
 	//TODO: Allouer le tableau pour les lignes.
-	image.lignes = new LigneImage{ 0,entete.largeur };
+	image.lignes = new LigneImage;
 	for (int i : range(entete.hauteur - 1, -1, -1)) {
 		//TODO: Mettre le début de ligne à 0 et sa longueur à entete.largeur .
-		//image.lignes[i] = *new LigneImage{0,entete.largeur};
+		image.lignes[i].debut = 0;
+		image.lignes[i].longueur = entete.largeur;
+		
 		//TODO: Allouer le tableau pour les intensités des pixels de la ligne.
 		image.lignes[i].intensites = new uint8_t;
 		for (int j : range(entete.largeur - 1, -1, -1)) {
 			//image.lignes[i].intensites[j] = *new uint8_t;
 			//TODO: Lire les intensités pour une ligne, à partir du fichier, vers le tableau alloué ci-dessus.
+			uint8_t pixel;
 			fichier.read((char*)&image.lignes[i].intensites[j], sizeof(uint8_t));
 		}
 		
@@ -151,24 +157,73 @@ bool chargerImage(Image& image, const string& nomImage)
 void decouperVide(Image& image)
 {
 	//TODO: Pour chaque ligne de l'image où un tableau d'intensité est alloué...
-
-
-
 	//TODO:   Si la ligne a uniquement des pixels vides, désallouer, mettre le pointeur à nullptr et la longueur à zéro.
-	bool existeNonZero = false;
-	for (int i : range(image.hauteur - 1, -1, -1)) {
-		for (int j : range(image.largeur - 1, -1, -1)) {
-			if (image.lignes[i].intensites[j] != 0) {
-				existeNonZero = true;
+	bool existeNonZero = false, trouverDebut = false, trouverFin = false;
+	int debutLigne = -1, finLigne = -1;
+	for (int i : range(0,image.hauteur)) {
+		if (image.lignes[i].intensites != nullptr) {
+			for (int j : range(0, image.largeur)) {
+				if (image.lignes[i].intensites[j] != 0 && !trouverDebut) {
+					existeNonZero = true;
+					trouverDebut = true;
+					debutLigne = j;
+				}
+
+				if (image.lignes[i].intensites[image.largeur - j - 1] != 0 && !trouverFin) {
+					existeNonZero = true;
+					trouverFin = true;
+					finLigne = image.largeur - j - 1;
+				}
 			}
 		}
+		if (!existeNonZero) {
+			delete image.lignes[i].intensites;
+			image.lignes[i].longueur = 0;
+			image.lignes[i].intensites = nullptr;
+		}
+		else if (image.lignes[i].debut != debutLigne && image.lignes[i].longueur != finLigne - debutLigne) {
+			uint8_t* nouvelleIntensites = new uint8_t; //Copier ligne
+			for (int j : range(0, finLigne - debutLigne)) {
+				nouvelleIntensites[j] = image.lignes[i].intensites[debutLigne+j];
+			}
+			image.lignes[i].debut = debutLigne;
+			image.lignes[i].longueur = finLigne - debutLigne;
+			delete image.lignes[i].intensites;
+			image.lignes[i].intensites = nouvelleIntensites;
+		}
+		
 	}
 	//TODO:   Sinon, si la ligne a des pixels vides au début et/ou à la fin, allouer un nouveau tableau plus petit, y copier les intensités qu'il faut conserver, et ajuster le debut et la longueur de la ligne.  Ensuite désallouer l'ancien tableau et le remplacer par le nouveau.
 }
 
 //TODO: Écrire la fonction tailleImage.
+unsigned tailleImage(const Image& image)
+{
+	unsigned taille = 0;
+	for (int i : range(0,image.hauteur)){
+		taille += image.lignes[i].longueur;
+	}
+	return taille;
+}
 
 //TODO: Écrire la fonction afficherImage.
+void afficherImage(Image& image) {
+	for (int i : range(0,image.hauteur)) {
+		if (image.lignes[i].intensites != nullptr) {
+			unsigned indexPixelVivant = 0;
+			for (int j : range(0, image.largeur)) {
+				if (j >= image.lignes[i].debut && j <= image.lignes[i].debut + image.lignes[i].longueur) {
+					afficherGris(image.lignes[i].intensites[indexPixelVivant]);
+					indexPixelVivant++;
+				}
+				else {
+					cout << " ";
+				}
+			}
+		}
+		cout << endl;
+	}
+}
 //TODO: S'assurer que la boucle interne de afficherImage n'a pas trois déréférences; de préférence elle devrait utiliser une boucle sur intervalles qui fait une seule déréférence implicitement.
 
 /*************************************************************************//**
@@ -180,10 +235,14 @@ int main()
 
 	Image image = {};
 	//TODO: Charger une image.
+	string nomFichier = "exemple4x4.tga";
+	chargerImage(image, nomFichier);
 	//TODO: Afficher la taille de l'image en nombre d'octets conservés au total dans les lignes.
 	//TODO: Découper le vide de l'image.
+	decouperVide(image);
 	//TODO: Afficher nouvelle taille de l'image en nombre d'octets conservés au total dans les lignes.
 	//TODO: Afficher l'image en texte.
+	afficherImage(image);
 	//TODO: Désallouer l'image.
 	
 	if (image.lignes != nullptr)
