@@ -87,18 +87,13 @@ void desallouerImage(Image& image)
 {
 	//TODO: Si le pointeur n'est pas nullptr, désallouer tout ce qui est pointé directement/indirectement par la structure Image, puis mettre le pointeur à nullptr.
 	for (int i : range(image.hauteur - 1, -1, -1)) {
-		//for (int j : range(image.largeur - 1, -1, -1)) {
-		//	delete &image.lignes[i].intensites[j];
-		//	//image.lignes[i].intensites[j] = 0;
-		//}
 		if (image.lignes[i].intensites != nullptr) {
-			delete image.lignes[i].intensites;
+			delete[] image.lignes[i].intensites;
 			image.lignes[i].intensites = nullptr;
 		}
-		//delete &image.lignes[i];
 	}
 	if (image.lignes != nullptr) {
-		delete image.lignes;
+		delete[] image.lignes;
 		image.lignes = nullptr;
 	}
 }
@@ -117,7 +112,7 @@ bool chargerImage(Image& image, const string& nomImage)
 	
 	fichier.read((char*)&entete, sizeof(entete));
 	
-	// On vérifie que le fichier correspond au format simple qu'on supporte.
+	// On vérifie que le fichier correspond au format simple qu'on supporte.d
 	if (entete.tailleId != 0
 		|| entete.typePalette != 0
 		|| entete.typeImage != 3
@@ -185,9 +180,9 @@ void decouperVide(Image& image)
 			image.lignes[i].intensites = nullptr;
 		}
 		else if (image.lignes[i].debut != debutLigne && image.lignes[i].longueur != finLigne - debutLigne) {
-			int longueur = finLigne - debutLigne + 1;//<------------
+			int longueur = finLigne - debutLigne + 1;
 			uint8_t* nouvelleIntensites = new uint8_t[longueur]; //Copier ligne
-			for (int j : range(0, longueur)) {//<------------
+			for (int j : range(0, longueur)) {
 				nouvelleIntensites[j] = image.lignes[i].intensites[debutLigne+j];
 			}
 			image.lignes[i].debut = debutLigne;
@@ -239,7 +234,7 @@ int main()
 
 	Image image = {};
 	//TODO: Charger une image.
-	string nomFichier = "rond.tga";
+	string nomFichier = "ironman3.tga";
 	chargerImage(image, nomFichier);
 	//TODO: Afficher la taille de l'image en nombre d'octets conservés au total dans les lignes.
 	cout << "L'image " << tailleImage(image) << " octets" << endl;
