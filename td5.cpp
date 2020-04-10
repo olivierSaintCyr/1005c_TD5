@@ -32,7 +32,9 @@ using namespace gsl;
 // Sur notre système les types déclarés par cstdint sont équivalents à:
 // typedef unsigned char   uint8_t;  // Un octet non signé (0 à 255).
 // typedef unsigned short  uint16_t; // Un mot de 16 bits non signé (0 à 65535).
-
+wchar_t é() {
+	return wchar_t(130);
+}
 /// Structure pour l'entête d'un fichier TGA.
 /// \note La structure est simplifiée; le programme ne supporte que les images en teintes de gris.
 struct EnteteTGA {
@@ -139,7 +141,6 @@ bool chargerImage(Image& image, const string& nomImage)
 		//TODO: Allouer le tableau pour les intensités des pixels de la ligne.
 		image.lignes[i].intensites = new uint8_t[image.largeur];
 		for (int j : range(0, image.largeur)) {
-			//image.lignes[i].intensites[j] = *new uint8_t;
 			//TODO: Lire les intensités pour une ligne, à partir du fichier, vers le tableau alloué ci-dessus.
 			fichier.read((char*)&image.lignes[i].intensites[j], sizeof(uint8_t));
 		}
@@ -149,7 +150,7 @@ bool chargerImage(Image& image, const string& nomImage)
 }
 
 //TODO: Écrire l'entête de fonction.
-void decouperVide(Image& image)
+void decouperVide(Image& image)//<---------------------------------------------------------------------------------------
 {
 	//TODO: Pour chaque ligne de l'image où un tableau d'intensité est alloué...
 	//TODO:   Si la ligne a uniquement des pixels vides, désallouer, mettre le pointeur à nullptr et la longueur à zéro.
@@ -159,7 +160,7 @@ void decouperVide(Image& image)
 		debutLigne = -1;
 		finLigne = -1;
 		existeNonZero = false, trouverDebut = false, trouverFin = false;
-		if (image.lignes[i].intensites != nullptr) {
+		if (image.lignes[i].intensites != nullptr) {//<---------------------------------------------------------------------------------------
 			for (int j : range(0, image.largeur)) {
 				if (image.lignes[i].intensites[j] != 0 && !trouverDebut) {
 					existeNonZero = true;
@@ -174,13 +175,13 @@ void decouperVide(Image& image)
 				}
 			}
 		}
-		if (!existeNonZero) {
+		if (!existeNonZero) {//<---------------------------------------------------------------------------------------
 			delete image.lignes[i].intensites;
 			image.lignes[i].longueur = 0;
 			image.lignes[i].intensites = nullptr;
 		}
 		else if (image.lignes[i].debut != debutLigne && image.lignes[i].longueur != finLigne - debutLigne) {
-			int longueur = finLigne - debutLigne + 1;
+			int longueur = finLigne - debutLigne + 1;//<---------------------------------------------------------------------------------------
 			uint8_t* nouvelleIntensites = new uint8_t[longueur]; //Copier ligne
 			for (int j : range(0, longueur)) {
 				nouvelleIntensites[j] = image.lignes[i].intensites[debutLigne+j];
@@ -234,20 +235,22 @@ int main()
 
 	Image image = {};
 	//TODO: Charger une image.
-	string nomFichier = "ironman3.tga";
+	string nomFichier = "rond.tga";
 	chargerImage(image, nomFichier);
 	//TODO: Afficher la taille de l'image en nombre d'octets conservés au total dans les lignes.
 	cout << "L'image " << tailleImage(image) << " octets" << endl;
 	//TODO: Découper le vide de l'image.
 	decouperVide(image);
 	//TODO: Afficher nouvelle taille de l'image en nombre d'octets conservés au total dans les lignes.
-	wcout << L"L'image " << tailleImage(image) << L" octets après découpage" << endl;
+	//wcout << L"L'image a " << tailleImage(image) << L" octets suite au " << "d" << wchar_t(130) <<"coupage" << endl;
+	wcout << L"L'image a " << tailleImage(image) << L" octets suite au " << "d" << é() << "coupage" << endl;
 	//TODO: Afficher l'image en texte.
 	afficherImage(image);
 	//TODO: Désallouer l'image.
 	desallouerImage(image);
 	if (image.lignes != nullptr)
 		cout << "Le pointeur de lignes devrait etre nul rendu a la fin du programme." << endl;
+	
 }
 
 //TODO: S'assurer que la compilation ne donne pas d'avertissement. \file
