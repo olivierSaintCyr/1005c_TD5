@@ -64,7 +64,24 @@ struct Image {
 #pragma endregion//}
 
 //TODO: Ajouter les fonctions nécessaires pour le principe DRY et la lisibilité.  Vous n'avez pas à écrire de commentaires d'entête pour ces fonctions ajoutées.
+void deleteLigne(LigneImage& ligne) {
+	delete[] ligne.intensites; //A verifier
+	ligne.longueur = 0;
+	ligne.intensites = nullptr;
+}
 
+void copierLigne(LigneImage& ligne, int debut, int longueur) {
+	uint8_t* nouvelleIntensites = new uint8_t[longueur]; //Copier ligne
+	
+	for (int j : range(0, longueur)) {
+		nouvelleIntensites[j] = ligne.intensites[debut + j];
+	}
+	deleteLigne(ligne);
+
+	ligne.debut = debut;
+	ligne.longueur = longueur;
+	ligne.intensites = nouvelleIntensites;
+}
 /*************************************************************************//**
 *  Affiche un caractère gris d'une certaine intensité à la console.
 *  Version très simple avec peu de niveaux de gris vraiment différents.
@@ -154,42 +171,45 @@ void decouperVide(Image& image)//<----------------------------------------------
 {
 	//TODO: Pour chaque ligne de l'image où un tableau d'intensité est alloué...
 	//TODO:   Si la ligne a uniquement des pixels vides, désallouer, mettre le pointeur à nullptr et la longueur à zéro.
-	bool existeNonZero = false, trouverDebut = false, trouverFin = false;
+	bool existeNonZero = false, debutTrouver = false, finTrouver = false;
 	int debutLigne = -1, finLigne = -1;
 	for (int i : range(0,image.hauteur)) {
 		debutLigne = -1;
 		finLigne = -1;
-		existeNonZero = false, trouverDebut = false, trouverFin = false;
+		existeNonZero = false, debutTrouver = false, finTrouver = false;
 		if (image.lignes[i].intensites != nullptr) {//<---------------------------------------------------------------------------------------
 			for (int j : range(0, image.largeur)) {
-				if (image.lignes[i].intensites[j] != 0 && !trouverDebut) {
+				if (image.lignes[i].intensites[j] != 0 && !debutTrouver) {
 					existeNonZero = true;
-					trouverDebut = true;
+					debutTrouver = true;
 					debutLigne = j;
 				}
 
-				if (image.lignes[i].intensites[image.largeur - j - 1] != 0 && !trouverFin) {
+				if (image.lignes[i].intensites[image.largeur - j - 1] != 0 && !finTrouver) {
 					existeNonZero = true;
-					trouverFin = true;
+					finTrouver = true;
 					finLigne = image.largeur - j - 1;
 				}
 			}
 		}
+		int longueur = finLigne - debutLigne + 1;
 		if (!existeNonZero) {//<---------------------------------------------------------------------------------------
-			delete image.lignes[i].intensites;
-			image.lignes[i].longueur = 0;
-			image.lignes[i].intensites = nullptr;
+			//delete[] image.lignes[i].intensites; //A verifier
+			//image.lignes[i].longueur = 0;
+			//image.lignes[i].intensites = nullptr;
+			deleteLigne(image.lignes[i]);
 		}
-		else if (image.lignes[i].debut != debutLigne && image.lignes[i].longueur != finLigne - debutLigne) {
-			int longueur = finLigne - debutLigne + 1;//<---------------------------------------------------------------------------------------
-			uint8_t* nouvelleIntensites = new uint8_t[longueur]; //Copier ligne
-			for (int j : range(0, longueur)) {
-				nouvelleIntensites[j] = image.lignes[i].intensites[debutLigne+j];
-			}
-			image.lignes[i].debut = debutLigne;
-			image.lignes[i].longueur = longueur;
-			delete image.lignes[i].intensites;
-			image.lignes[i].intensites = nouvelleIntensites;
+		else if (image.lignes[i].debut != debutLigne && image.lignes[i].longueur != longueur) {
+			//<---------------------------------------------------------------------------------------
+			//uint8_t* nouvelleIntensites = new uint8_t[longueur]; //Copier ligne
+			//for (int j : range(0, longueur)) {
+			//	nouvelleIntensites[j] = image.lignes[i].intensites[debutLigne+j];
+			//}
+			//image.lignes[i].debut = debutLigne;
+			//image.lignes[i].longueur = longueur;
+			//delete image.lignes[i].intensites;
+			//image.lignes[i].intensites = nouvelleIntensites;
+			copierLigne(image.lignes[i], debutLigne, longueur);
 		}
 		
 	}
