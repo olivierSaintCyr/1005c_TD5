@@ -64,19 +64,21 @@ struct Image {
 #pragma endregion//}
 
 //TODO: Ajouter les fonctions nécessaires pour le principe DRY et la lisibilité.  Vous n'avez pas à écrire de commentaires d'entête pour ces fonctions ajoutées.
-void deleteLigne(LigneImage& ligne) {
-	delete[] ligne.intensites; //A verifier
-	ligne.longueur = 0;
-	ligne.intensites = nullptr;
+void supprimerIntensitesLigne(LigneImage& ligne) {
+	if (ligne.intensites != nullptr) {
+		delete[] ligne.intensites; //A verifier
+		ligne.longueur = 0;
+		ligne.intensites = nullptr;
+	}
 }
 
 void copierLigne(LigneImage& ligne, int debut, int longueur) {
-	uint8_t* nouvelleIntensites = new uint8_t[longueur]; //Copier ligne
+	uint8_t* nouvelleIntensites = new uint8_t[longueur];
 	
 	for (int j : range(0, longueur)) {
 		nouvelleIntensites[j] = ligne.intensites[debut + j];
 	}
-	deleteLigne(ligne);
+	supprimerIntensitesLigne(ligne);
 
 	ligne.debut = debut;
 	ligne.longueur = longueur;
@@ -107,8 +109,9 @@ void desallouerImage(Image& image)
 	//TODO: Si le pointeur n'est pas nullptr, désallouer tout ce qui est pointé directement/indirectement par la structure Image, puis mettre le pointeur à nullptr.
 	for (int i : range(image.hauteur - 1, -1, -1)) {
 		if (image.lignes[i].intensites != nullptr) {
-			delete[] image.lignes[i].intensites;
-			image.lignes[i].intensites = nullptr;
+			/*delete[] image.lignes[i].intensites;
+			image.lignes[i].intensites = nullptr;*/
+			supprimerIntensitesLigne(image.lignes[i]);
 		}
 	}
 	if (image.lignes != nullptr) {
@@ -197,7 +200,7 @@ void decouperVide(Image& image)//<----------------------------------------------
 			//delete[] image.lignes[i].intensites; //A verifier
 			//image.lignes[i].longueur = 0;
 			//image.lignes[i].intensites = nullptr;
-			deleteLigne(image.lignes[i]);
+			supprimerIntensitesLigne(image.lignes[i]);
 		}
 		else if (image.lignes[i].debut != debutLigne && image.lignes[i].longueur != longueur) {
 			//<---------------------------------------------------------------------------------------
@@ -263,7 +266,7 @@ int main()
 	decouperVide(image);
 	//TODO: Afficher nouvelle taille de l'image en nombre d'octets conservés au total dans les lignes.
 	//wcout << L"L'image a " << tailleImage(image) << L" octets suite au " << "d" << wchar_t(130) <<"coupage" << endl;
-	wcout << L"L'image a " << tailleImage(image) << L" octets suite au " << "d" << é() << "coupage" << endl;
+	cout << "L'image a " << tailleImage(image) << " octets suite au decoupage" << endl;
 	//TODO: Afficher l'image en texte.
 	afficherImage(image);
 	//TODO: Désallouer l'image.
