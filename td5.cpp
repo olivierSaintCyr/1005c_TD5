@@ -66,7 +66,7 @@ struct Image {
 void supprimerIntensitesLigne(LigneImage& ligne) {
 	if (ligne.intensites != nullptr) {
 		delete[] ligne.intensites;
-		ligne.longueur = NULL;
+		ligne.longueur = 0;
 		ligne.intensites = nullptr;
 	}
 }
@@ -108,8 +108,6 @@ void desallouerImage(Image& image)
 {
 	//TODO: Si le pointeur n'est pas nullptr, désallouer tout ce qui est pointé directement/indirectement par la structure Image, puis mettre le pointeur à nullptr.
 	for (int i : range(image.hauteur - 1, -1, -1)) {
-		 /*delete[] image.lignes[i].intensites;
-		image.lignes[i].intensites = nullptr;*/
 		supprimerIntensitesLigne(image.lignes[i]);
 	}
 	if (image.lignes != nullptr) {
@@ -117,7 +115,6 @@ void desallouerImage(Image& image)
 		image.lignes = nullptr;
 	}
 }
-
 
 /*************************************************************************//**
 *  Charge une image d'un fichier TGA.
@@ -176,13 +173,10 @@ bool chargerImage(Image& image, const string& nomImage)
 void decouperVide(Image& image)//<---------------------------------------------------------------------------------------
 {
 	//TODO: Pour chaque ligne de l'image où un tableau d'intensité est alloué...
-	//TODO:   Si la ligne a uniquement des pixels vides, désallouer, mettre le pointeur à nullptr et la longueur à zéro.
-	bool debutTrouver, finTrouver;
-	int debutLigne = -1, finLigne = -1;
 	for (int i : range(0,image.hauteur)) {
-		debutLigne = -1;
-		finLigne = -1;
-		debutTrouver = false, finTrouver = false;
+		int debutLigne = -1, finLigne = -1;
+		bool debutTrouver = false, finTrouver = false;
+		
 		if (image.lignes[i].intensites != nullptr) {
 			for (int j : range(0, image.largeur)) {
 				if (image.lignes[i].intensites[j] != 0 && !debutTrouver) {
@@ -197,14 +191,15 @@ void decouperVide(Image& image)//<----------------------------------------------
 			}
 		}
 		int longueur = finLigne - debutLigne + 1;
+		//TODO:   Si la ligne a uniquement des pixels vides, désallouer, mettre le pointeur à nullptr et la longueur à zéro.
 		if (!(debutTrouver||finTrouver)) {
-			supprimerIntensitesLigne(image.lignes[i]);
+			supprimerIntensitesLigne(image.lignes[i]);	
 		}
+		//TODO:   Sinon, si la ligne a des pixels vides au début et/ou à la fin, allouer un nouveau tableau plus petit, y copier les intensités qu'il faut conserver, et ajuster le debut et la longueur de la ligne.  Ensuite désallouer l'ancien tableau et le remplacer par le nouveau.
 		else if (image.lignes[i].debut != debutLigne && image.lignes[i].longueur != longueur) {
 			copierLigne(image.lignes[i], debutLigne, longueur);
 		}
 	}
-	//TODO:   Sinon, si la ligne a des pixels vides au début et/ou à la fin, allouer un nouveau tableau plus petit, y copier les intensités qu'il faut conserver, et ajuster le debut et la longueur de la ligne.  Ensuite désallouer l'ancien tableau et le remplacer par le nouveau.
 }
 
 //TODO: Écrire la fonction tailleImage.
