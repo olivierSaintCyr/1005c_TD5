@@ -32,9 +32,7 @@ using namespace gsl;
 // Sur notre système les types déclarés par cstdint sont équivalents à:
 // typedef unsigned char   uint8_t;  // Un octet non signé (0 à 255).
 // typedef unsigned short  uint16_t; // Un mot de 16 bits non signé (0 à 65535).
-wchar_t é() {
-	return wchar_t(130);
-}
+
 /// Structure pour l'entête d'un fichier TGA.
 /// \note La structure est simplifiée; le programme ne supporte que les images en teintes de gris.
 struct EnteteTGA {
@@ -64,10 +62,11 @@ struct Image {
 #pragma endregion//}
 
 //TODO: Ajouter les fonctions nécessaires pour le principe DRY et la lisibilité.  Vous n'avez pas à écrire de commentaires d'entête pour ces fonctions ajoutées.
+
 void supprimerIntensitesLigne(LigneImage& ligne) {
 	if (ligne.intensites != nullptr) {
-		delete[] ligne.intensites; //A verifier
-		ligne.longueur = 0;
+		delete[] ligne.intensites;
+		ligne.longueur = NULL;
 		ligne.intensites = nullptr;
 	}
 }
@@ -84,6 +83,7 @@ void copierLigne(LigneImage& ligne, int debut, int longueur) {
 	ligne.longueur = longueur;
 	ligne.intensites = nouvelleIntensites;
 }
+
 /*************************************************************************//**
 *  Affiche un caractère gris d'une certaine intensité à la console.
 *  Version très simple avec peu de niveaux de gris vraiment différents.
@@ -108,11 +108,9 @@ void desallouerImage(Image& image)
 {
 	//TODO: Si le pointeur n'est pas nullptr, désallouer tout ce qui est pointé directement/indirectement par la structure Image, puis mettre le pointeur à nullptr.
 	for (int i : range(image.hauteur - 1, -1, -1)) {
-		if (image.lignes[i].intensites != nullptr) {
-			/*delete[] image.lignes[i].intensites;
-			image.lignes[i].intensites = nullptr;*/
-			supprimerIntensitesLigne(image.lignes[i]);
-		}
+		 /*delete[] image.lignes[i].intensites;
+		image.lignes[i].intensites = nullptr;*/
+		supprimerIntensitesLigne(image.lignes[i]);
 	}
 	if (image.lignes != nullptr) {
 		delete[] image.lignes;
@@ -120,10 +118,11 @@ void desallouerImage(Image& image)
 	}
 }
 
+
 /*************************************************************************//**
 *  Charge une image d'un fichier TGA.
 *  \param [in,out]  image     L'image qui sera remplacée par celle chargée.
-*  \param           nomImage  Nom du fichier TGA.
+*  \param  [in]     nomImage  Nom du fichier TGA.
 *  \return  \c true si l'image s'est bien chargée.
 */
 bool chargerImage(Image& image, const string& nomImage)
@@ -170,56 +169,50 @@ bool chargerImage(Image& image, const string& nomImage)
 }
 
 //TODO: Écrire l'entête de fonction.
+/*************************************************************************//**
+*  Découpe les parties vides des images.
+*  \param [in,out]  image     L'image dont nous voulons découper le vide.
+*/
 void decouperVide(Image& image)//<---------------------------------------------------------------------------------------
 {
 	//TODO: Pour chaque ligne de l'image où un tableau d'intensité est alloué...
 	//TODO:   Si la ligne a uniquement des pixels vides, désallouer, mettre le pointeur à nullptr et la longueur à zéro.
-	bool existeNonZero = false, debutTrouver = false, finTrouver = false;
+	bool debutTrouver, finTrouver;
 	int debutLigne = -1, finLigne = -1;
 	for (int i : range(0,image.hauteur)) {
 		debutLigne = -1;
 		finLigne = -1;
-		existeNonZero = false, debutTrouver = false, finTrouver = false;
-		if (image.lignes[i].intensites != nullptr) {//<---------------------------------------------------------------------------------------
+		debutTrouver = false, finTrouver = false;
+		if (image.lignes[i].intensites != nullptr) {
 			for (int j : range(0, image.largeur)) {
 				if (image.lignes[i].intensites[j] != 0 && !debutTrouver) {
-					existeNonZero = true;
 					debutTrouver = true;
 					debutLigne = j;
 				}
 
 				if (image.lignes[i].intensites[image.largeur - j - 1] != 0 && !finTrouver) {
-					existeNonZero = true;
 					finTrouver = true;
 					finLigne = image.largeur - j - 1;
 				}
 			}
 		}
 		int longueur = finLigne - debutLigne + 1;
-		if (!existeNonZero) {//<---------------------------------------------------------------------------------------
-			//delete[] image.lignes[i].intensites; //A verifier
-			//image.lignes[i].longueur = 0;
-			//image.lignes[i].intensites = nullptr;
+		if (!(debutTrouver||finTrouver)) {
 			supprimerIntensitesLigne(image.lignes[i]);
 		}
 		else if (image.lignes[i].debut != debutLigne && image.lignes[i].longueur != longueur) {
-			//<---------------------------------------------------------------------------------------
-			//uint8_t* nouvelleIntensites = new uint8_t[longueur]; //Copier ligne
-			//for (int j : range(0, longueur)) {
-			//	nouvelleIntensites[j] = image.lignes[i].intensites[debutLigne+j];
-			//}
-			//image.lignes[i].debut = debutLigne;
-			//image.lignes[i].longueur = longueur;
-			//delete image.lignes[i].intensites;
-			//image.lignes[i].intensites = nouvelleIntensites;
 			copierLigne(image.lignes[i], debutLigne, longueur);
 		}
-		
 	}
 	//TODO:   Sinon, si la ligne a des pixels vides au début et/ou à la fin, allouer un nouveau tableau plus petit, y copier les intensités qu'il faut conserver, et ajuster le debut et la longueur de la ligne.  Ensuite désallouer l'ancien tableau et le remplacer par le nouveau.
 }
 
 //TODO: Écrire la fonction tailleImage.
+/*************************************************************************//**
+*  Détermine la taille d'un image.
+*  \param [in,out]  image     L'image dont nous voulons savoir la taille.
+*  \return  LA taille de l'image.
+*/
 unsigned tailleImage(const Image& image)
 {
 	unsigned taille = 0;
@@ -230,6 +223,10 @@ unsigned tailleImage(const Image& image)
 }
 
 //TODO: Écrire la fonction afficherImage.
+/*************************************************************************//**
+*  Affiche l'image dans la console.
+*  \param [in,out]  image     L'image qui sera affiché.
+*/
 void afficherImage(Image& image) {
 	for (int i : range(0,image.hauteur)) {
 		if (image.lignes[i].intensites != nullptr) {
@@ -265,7 +262,6 @@ int main()
 	//TODO: Découper le vide de l'image.
 	decouperVide(image);
 	//TODO: Afficher nouvelle taille de l'image en nombre d'octets conservés au total dans les lignes.
-	//wcout << L"L'image a " << tailleImage(image) << L" octets suite au " << "d" << wchar_t(130) <<"coupage" << endl;
 	cout << "L'image a " << tailleImage(image) << " octets suite au decoupage" << endl;
 	//TODO: Afficher l'image en texte.
 	afficherImage(image);
@@ -273,7 +269,6 @@ int main()
 	desallouerImage(image);
 	if (image.lignes != nullptr)
 		cout << "Le pointeur de lignes devrait etre nul rendu a la fin du programme." << endl;
-	
 }
 
 //TODO: S'assurer que la compilation ne donne pas d'avertissement. \file
