@@ -4,7 +4,7 @@
 *  \file    td5.cpp
 *  \author  Lévesque, William (2028363)
 *  \author  Saint-Cyr, Olivier (2054136)
-*  \date    02 Avril 2020
+*  \date    26 Avril 2020
 *  \note    Basé sur un code incomplet fourni par Francois-R.Boyer@PolyMtl.ca
 *****************************************************************************/
 //TODO: Mettre les bons noms dans l'entête du fichier. \file
@@ -130,7 +130,7 @@ bool chargerImage(Image& image, const string& nomImage)
 	
 	fichier.read((char*)&entete, sizeof(entete));
 	
-	// On vérifie que le fichier correspond au format simple qu'on supporte.d
+	// On vérifie que le fichier correspond au format simple qu'on supporte.
 	if (entete.tailleId != 0
 		|| entete.typePalette != 0
 		|| entete.typeImage != 3
@@ -250,7 +250,7 @@ int main()
 
 	Image image = {};
 	//TODO: Charger une image.
-	string nomFichier = "rond.tga";
+	string nomFichier = "turing.tga";
 	chargerImage(image, nomFichier);
 	//TODO: Afficher la taille de l'image en nombre d'octets conservés au total dans les lignes.
 	cout << "L'image " << tailleImage(image) << " octets" << endl;
